@@ -5,7 +5,7 @@ import furhatos.flow.kotlin.state
 import furhatos.flow.kotlin.furhat
 import furhatos.flow.kotlin.onResponse
 
-// Custom intents
+/**Custom intent classes */
 import furhatos.nlu.Intent
 import furhatos.nlu.SimpleIntent
 import furhatos.util.Language
@@ -21,6 +21,20 @@ class AgeNumberIntent : Intent() {
     }
 }
 
+// Intent for university year
+class UniversityYearIntent : Intent() {
+    override fun getExamples(lang: Language): List<String> {
+        return if (lang == Language.ENGLISH_GB) {
+            listOf("first", "second", "third", "fourth")
+        } else {
+            listOf()
+        }
+    }
+}
+
+/**
+ * Translations objects for translating user answer to Dutch
+ * */
 // Age number translation
 val numberTranslation = mapOf(
     "18" to "achttien",
@@ -31,14 +45,16 @@ val numberTranslation = mapOf(
     "23" to "drieëntwintig",
 )
 
+// University year translation
+val yearTranslation = mapOf(
+    "first" to "eerste",
+    "second" to "tweede",
+    "third" to "derde",
+    "fourth" to "vierde",
+)
 
-// Intent for Geweldig
-class GeweldigIntent : Intent() {
-    override fun getExamples(lang: Language): List<String> {
-        return if (lang == Language.DUTCH) listOf("Geweldig") else listOf()
-    }
-}
 
+// State for teaching phrases
 val Phrases: State = state {
     onEntry {
         furhat.say("Repeat after each phrase in Dutch.")
@@ -67,6 +83,64 @@ val Questions: State = state {
     }
 }
 
+// States for teaching questions
+val AgeQuestion: State = state {
+    onEntry {
+        furhat.say("How old are you?")
+        furhat.setInputLanguage(Language.ENGLISH_GB)
+        furhat.listen()
+    }
+    onResponse<AgeNumberIntent> {
+        val age = it.text.toString()
+        val translation = numberTranslation[age]
+        if (translation != null) {
+            furhat.say("You said $age, which is $translation in Dutch.")
+            furhat.say("You could answer this question by saying 'Ik ben $translation jaar oud'.")
+            furhat.say("Try saying it now.")
+            call(ListenForAnswer("Ik ben $translation jaar oud"))
+        } else {
+            furhat.say("I'm sorry, I don't know how to say $age in Dutch.")
+            furhat.say("Let's start again")
+            reentry()
+        }
+        terminate()
+    }
+    onReentry { furhat.listen() }
+}
+
+val UniversityYearQuestion: State = state {
+    onEntry {
+        furhat.say("What year are you in at university?")
+        furhat.setInputLanguage(Language.ENGLISH_GB)
+        furhat.listen()
+    }
+    onResponse<UniversityYearIntent> {
+        val year = it.text.toString()
+        val translation = yearTranslation[year]
+        if (translation != null) {
+            furhat.say("You said $year, which is $translation in Dutch.")
+            furhat.say("You could ask this question by saying 'In welk jaar zit je op de universiteit?'.")
+            furhat.say("An then you could answer this question by saying 'Ik zit in het $translation jaar van de universiteit'.")
+        } else {
+            furhat.say("I'm sorry, I don't know how to say $year in Dutch.")
+            furhat.say("Let's try again")
+            reentry()
+        }
+        furhat.say("You said $year.")
+        furhat.say("You could answer this question by saying 'Ik zit in het $year jaar van de universiteit'.")
+        terminate()
+    }
+    onResponse {
+        furhat.say("I'm sorry, I didn't understand that. Could you please repeat by just saying number of what year are you in?")
+        reentry()
+    }
+    onReentry { furhat.listen() }
+}
+
+
+/**
+ * State functions
+ * */
 // Function for teaching phrases
 fun PhraseState(phrase: String, meaning: String) = state {
     var attempts = 0
@@ -101,26 +175,29 @@ fun PhraseState(phrase: String, meaning: String) = state {
     }
 }
 
-
-// States for teaching questions
-val AgeQuestion: State = state {
+fun ListenForAnswer(phrase: String) = state {
+    var attempts = 0
     onEntry {
-        furhat.say("How old are you?")
-        furhat.setInputLanguage(Language.ENGLISH_GB)
+        furhat.setInputLanguage(Language.DUTCH)
         furhat.listen()
     }
-    onResponse<AgeNumberIntent> {
-        val age = it.text.toString()
-        val translation = numberTranslation[age]
-        if (translation != null) {
-            furhat.say("You said $age, which is $translation in Dutch.")
-            furhat.say("You could answer this question by saying 'Ik ben $translation jaar oud'.")
-        } else {
-            furhat.say("I'm sorry, I don't know how to say $age in Dutch.")
-            furhat.say("Let's start again")
-            reentry()   
-        }
+    val Intent = SimpleIntent(phrase)
+    onResponse(Intent) {
+        furhat.say("You said $phrase.")
+        furhat.say("Great job!")
+        attempts = 0
         terminate()
+    }
+    onResponse {
+        attempts++
+        if (attempts < 2) {
+            furhat.say("I'm sorry, I didn't understand that. Try saying $phrase")
+            furhat.listen()
+        } else {
+            furhat.say("Let's move on to the next question.")
+            attempts = 0
+            terminate()
+        }
     }
     onReentry { furhat.listen() }
 }
