@@ -20,12 +20,66 @@ class AgeNumberIntent : Intent() {
         }
     }
 }
-
 // Intent for university year
 class UniversityYearIntent : Intent() {
     override fun getExamples(lang: Language): List<String> {
         return if (lang == Language.ENGLISH_GB) {
             listOf("first", "second", "third", "fourth")
+        } else {
+            listOf()
+        }
+    }
+}
+// Intent for not understanding
+class NotUnderstandIntent : Intent() {
+    override fun getExamples(lang: Language): List<String> {
+        return if (lang == Language.ENGLISH_GB) {
+            listOf("I don't understand", "I don't know", "I'm not sure", "Can you repeat?")
+        } else {
+            listOf()
+        }
+    }
+}
+// University course intent
+class UniversityStudyIntent : Intent() {
+    override fun getExamples(lang: Language): List<String> {
+        return if (lang == Language.DUTCH) {
+            listOf(
+                "Ik studeer informatica", // I study computer science
+                "Ik studeer wiskunde", // I study mathematics
+                "Ik studeer natuurkunde", // I study physics
+                "Ik studeer kunstmatige intelligentie", // I study artificial intelligence
+                "Ik studeer bedrijfseconomie", // I study business economics
+                "Ik studeer biologie", // I study biology
+                "Ik studeer scheikunde", // I study chemistry
+                "Ik studeer geneeskunde", // I study medicine
+                "Ik studeer psychologie", // I study psychology
+                "Ik studeer rechten" // I study law
+            )
+        } else {
+            listOf()
+        }
+    }
+}
+// Netherlands city intent
+class CityIntent : Intent() {
+    // List of cities
+    private val cities = listOf(
+        "Amsterdam",
+        "Rotterdam",
+        "Den Haag",
+        "Utrecht",
+        "Eindhoven",
+        "Tilburg",
+        "Groningen",
+        "Almere",
+        "Breda",
+        "Nijmegen"
+    )
+    // Creating intent list with cities
+    override fun getExamples(lang: Language): List<String> {
+        return if (lang == Language.DUTCH) {
+            cities.map { "Ik woon in $it" }
         } else {
             listOf()
         }
@@ -52,7 +106,7 @@ val yearTranslation = mapOf(
     "fourth" to "vierde",
 )
 
-
+/**Main flow states*/
 // Flow state for teaching phrases
 val Phrases: State = state {
     onEntry {
@@ -81,9 +135,13 @@ val Questions: State = state {
         furhat.say("I will ask you question in English, please answer in English and then I will teach you to answer this question in Dutch.")
         call(AgeQuestion)
         call(UniversityYearQuestion)
+        furhat.say("Great job! You have learned how to ask and answer questions in Dutch.")
+        furhat.say("Now I will ask some basic questions in Dutch, try to answer them, If you will not understand, say it and I will help you.")
+        call(UniversityCourseQuestion)
+        call(CityQuestion)
+
     }
 }
-
 
 /**Callable states for teaching questions*/
 val AgeQuestion: State = state {
@@ -137,6 +195,7 @@ val UniversityYearQuestion: State = state {
 
         terminate()
     }
+
     onResponse {
         furhat.say("I'm sorry, I didn't understand that. Could you please repeat by just saying number of what year are you in?")
         reentry()
@@ -144,10 +203,75 @@ val UniversityYearQuestion: State = state {
     onReentry { furhat.listen() }
 }
 
+/** Asking Dutch questions for practice callable states*/
+val UniversityCourseQuestion: State = state {
+    var attempts = 0
+    onEntry {
+        furhat.say("Wat studeer je aan de universiteit?")
+        furhat.setInputLanguage(Language.DUTCH, Language.ENGLISH_GB)
+        furhat.listen()
+    }
+    onResponse<UniversityStudyIntent> {
+        furhat.say("You said ${it.text}.")
+        furhat.say("Great job!")
+        attempts = 0
+        terminate()
+    }
+    onResponse<NotUnderstandIntent> {
+        furhat.say("Wat studeer je aan de universiteit? means what do you study at the university?")
+        furhat.say("Try saying 'Ik studeer' and then the name of the course you study.")
+        reentry()
+    }
+    onResponse {
+        attempts++
+        if (attempts < 2) {
+            furhat.say("I didn't understand that. Could you please repeat?")
+            furhat.say("If you don't understand, you can say 'I don't understand'.")
+            reentry()
+        } else {
+            furhat.say("Let's move on to the next question.")
+            attempts = 0
+            terminate()
+        }
+    }
+    onReentry { furhat.listen() }
 
-/**
- * State functions
- * */
+}
+
+val CityQuestion: State = state {
+    var attempts = 0
+    onEntry {
+        furhat.say("In welke stad woon je?")
+        furhat.setInputLanguage(Language.DUTCH, Language.ENGLISH_GB)
+        furhat.listen()
+    }
+    onResponse<CityIntent> {
+        furhat.say("You said ${it.text}.")
+        furhat.say("Great job!")
+        attempts = 0
+        terminate()
+    }
+    onResponse<NotUnderstandIntent> {
+        furhat.say("In wlke stad woon je? means in which city do you live?")
+        furhat.say("Try saying 'Ik woon in' and then name of the city you live in.")
+        reentry()
+    }
+    onResponse {
+        attempts++
+        if (attempts < 2) {
+            furhat.say("I didn't understand that. Could you please repeat?")
+            furhat.say("If you don't understand, you can say 'I don't understand'.")
+            reentry()
+        } else {
+            furhat.say("Let's move on to the next question.")
+            attempts = 0
+            terminate()
+        }
+    }
+    onReentry { furhat.listen() }
+}
+
+/**State functions*/
 // Function for teaching phrases
 fun PhraseState(phrase: String, meaning: String) = state {
     var attempts = 0
@@ -181,7 +305,7 @@ fun PhraseState(phrase: String, meaning: String) = state {
         }
     }
 }
-
+// Function for listening for a specific provided phrase
 fun ListenForPhrase(phrase: String) = state {
     var attempts = 0
     onEntry {
