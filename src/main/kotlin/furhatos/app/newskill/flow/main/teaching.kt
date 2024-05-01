@@ -9,28 +9,28 @@ import furhatos.flow.kotlin.onResponse
 import furhatos.nlu.Intent
 import furhatos.nlu.SimpleIntent
 import furhatos.util.Language
-import kotlin.reflect.KClass
 
-// Intent for Hallo
-class HalloIntent : Intent() {
+// Intent for age numbers
+class AgeNumberIntent : Intent() {
     override fun getExamples(lang: Language): List<String> {
-        return if (lang == Language.DUTCH) listOf("Hallo") else listOf()
+        return if (lang == Language.ENGLISH_GB) {
+            listOf("18", "19", "20", "21", "22", "23")
+        } else {
+            listOf()
+        }
     }
 }
 
-// Intent for Goedemorgen
-class GoedemorgenIntent : Intent() {
-    override fun getExamples(lang: Language): List<String> {
-        return if (lang == Language.DUTCH) listOf("Goedemorgen") else listOf()
-    }
-}
+// Age number translation
+val numberTranslation = mapOf(
+    "18" to "achttien",
+    "19" to "negentien",
+    "20" to "twintig",
+    "21" to "eenentwintig",
+    "22" to "tweeëntwintig",
+    "23" to "drieëntwintig",
+)
 
-// Intent for Goedemiddag
-class GoedemiddagIntent : Intent() {
-    override fun getExamples(lang: Language): List<String> {
-        return if (lang == Language.DUTCH) listOf("Goedemiddag") else listOf()
-    }
-}
 
 // Intent for Geweldig
 class GeweldigIntent : Intent() {
@@ -40,127 +40,34 @@ class GeweldigIntent : Intent() {
 }
 
 val Phrases: State = state {
-    var attempts = 0
     onEntry {
         furhat.say("Repeat after each phrase in Dutch.")
-        furhat.say("We will start with greetings.")
-        call(PhraseState("Hallo", "Hello"))
-        call(PhraseState("Goedemiddag", "Good afternoon"))
-        call(PhraseState("Goedenavond", "Good evening"))
-        call(PhraseState("Goedenavond", "Good evening"))
-        call(PhraseState("Tot ziens", "Goodbye"))
-        furhat.say("Nice job! Let's move on to the next section, basic phrases.")
-        call(PhraseState("Ja", "Yes"))
-        call(PhraseState("Nee", "No"))
-        call(PhraseState("Alsjeblieft", "Please"))
-        call(PhraseState("Dank je wel", "Thank you"))
-        call(PhraseState("Sorry", "Excuse me"))
-        call(PhraseState("Het spijt me", "I'm sorry"))
+        goto(Questions)
+//        furhat.say("We will start with greetings.")
+//        call(PhraseState("Hallo", "Hello"))
+//        call(PhraseState("Goedemiddag", "Good afternoon"))
+//        call(PhraseState("Goedenavond", "Good evening"))
+//        call(PhraseState("Goedenavond", "Good evening"))
+//        call(PhraseState("Tot ziens", "Goodbye"))
+//        furhat.say("Nice job! Let's move on to the next section, basic phrases.")
+//        call(PhraseState("Ja", "Yes"))
+//        call(PhraseState("Nee", "No"))
+//        call(PhraseState("Alsjeblieft", "Please"))
+//        call(PhraseState("Dank je wel", "Thank you"))
+//        call(PhraseState("Sorry", "Excuse me"))
+//        call(PhraseState("Het spijt me", "I'm sorry"))
     }
 }
 
-val Hallo: State = state {
-    var attempts = 0
+val Questions: State = state {
     onEntry {
-        furhat.say("'Hallo' means 'Hello")
-        furhat.setInputLanguage(Language.DUTCH)
-        furhat.listen()
-    }
-    onResponse<HalloIntent> {
-        furhat.say("You said 'Hallo', which is 'Hello' in Dutch.")
-        attempts = 0
-        goto(Goedemorgen)
-    }
-    onResponse {
-        attempts++
-        if (attempts < 2) {
-            furhat.say("That's not quite right. Try again.")
-            furhat.say("Hallo")
-            furhat.listen()
-        } else {
-            furhat.say("Let's move on to the next phrase.")
-            attempts = 0
-            goto(Goedemorgen)
-        }
+        furhat.say("Now, let's practice some questions.")
+        furhat.say("I will ask you question in English, please answer in English and then I will teach you to answer this question in Dutch.")
+        call(AgeQuestion)
     }
 }
 
-val Goedemorgen: State = state {
-    var attempts = 0
-    onEntry {
-        furhat.say("'Goedemorgen'")
-        furhat.say("Good morning")
-        furhat.setInputLanguage(Language.DUTCH)
-        furhat.listen()
-    }
-    onResponse<GoedemorgenIntent> {
-        furhat.say("You said 'Goedemorgen', which is 'Good morning' in Dutch.")
-        attempts = 0
-        goto(Goedemiddag)
-    }
-    onResponse {
-        attempts++
-        if (attempts < 2) {
-            furhat.say("That's not quite right. Try again.")
-            furhat.say("Goedemorgen")
-            furhat.listen()
-        } else {
-            furhat.say("Let's move on to the next phrase.")
-            attempts = 0
-            goto(Goedemiddag)
-        }
-    }
-}
-
-val Goedemiddag: State = state {
-    var attempts = 0
-    onEntry {
-        furhat.say("'Goedemiddag' means 'Good afternoon")
-        furhat.setInputLanguage(Language.DUTCH)
-        furhat.listen()
-    }
-    onResponse<GoedemiddagIntent> {
-        furhat.say("You said 'Goedemiddag', which is 'Good afternoon' in Dutch.")
-        attempts = 0
-        goto(Geweldig)
-    }
-    onResponse {
-        attempts++
-        if (attempts < 2) {
-            furhat.say("That's not quite right. Try again.")
-            furhat.say("Goedemiddag")
-            furhat.listen()
-        } else {
-            furhat.say("Let's move on to the next phrase.")
-            attempts = 0
-            goto(Geweldig)
-        }
-    }
-}
-
-val Geweldig: State = state {
-    var attempts = 0
-    onEntry {
-        furhat.say("'Geweldig' means 'Great")
-        furhat.setInputLanguage(Language.DUTCH)
-        furhat.listen()
-    }
-    onResponse<GeweldigIntent> { furhat.say("You said 'Geweldig', which is 'Great' in Dutch.")
-        attempts = 0}
-    onResponse {
-        attempts++
-        if (attempts < 2) {
-            furhat.say("That's not quite right. Try again.")
-            furhat.say("Geweldig")
-            furhat.listen()
-        } else {
-            furhat.say("Let's move on to the next phrase.")
-            attempts = 0
-            // Move to the next phrase here
-        }
-    }
-}
-
+// Function for teaching phrases
 fun PhraseState(phrase: String, meaning: String) = state {
     var attempts = 0
     onEntry {
@@ -192,4 +99,28 @@ fun PhraseState(phrase: String, meaning: String) = state {
             terminate()
         }
     }
+}
+
+
+// States for teaching questions
+val AgeQuestion: State = state {
+    onEntry {
+        furhat.say("How old are you?")
+        furhat.setInputLanguage(Language.ENGLISH_GB)
+        furhat.listen()
+    }
+    onResponse<AgeNumberIntent> {
+        val age = it.text.toString()
+        val translation = numberTranslation[age]
+        if (translation != null) {
+            furhat.say("You said $age, which is $translation in Dutch.")
+            furhat.say("You could answer this question by saying 'Ik ben $translation jaar oud'.")
+        } else {
+            furhat.say("I'm sorry, I don't know how to say $age in Dutch.")
+            furhat.say("Let's start again")
+            reentry()   
+        }
+        terminate()
+    }
+    onReentry { furhat.listen() }
 }
