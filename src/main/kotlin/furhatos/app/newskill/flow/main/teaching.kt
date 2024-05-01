@@ -4,10 +4,12 @@ import furhatos.flow.kotlin.State
 import furhatos.flow.kotlin.state
 import furhatos.flow.kotlin.furhat
 import furhatos.flow.kotlin.onResponse
+import furhatos.flow.kotlin.voice.Voice
 
 /**Custom intent classes */
 import furhatos.nlu.Intent
 import furhatos.nlu.SimpleIntent
+import furhatos.nlu.common.DontKnow
 import furhatos.util.Language
 
 // Intent for age numbers
@@ -31,15 +33,6 @@ class UniversityYearIntent : Intent() {
     }
 }
 // Intent for not understanding
-class NotUnderstandIntent : Intent() {
-    override fun getExamples(lang: Language): List<String> {
-        return if (lang == Language.ENGLISH_GB) {
-            listOf("I don't understand", "I don't know", "I'm not sure", "Can you repeat?")
-        } else {
-            listOf()
-        }
-    }
-}
 // University course intent
 class UniversityStudyIntent : Intent() {
     override fun getExamples(lang: Language): List<String> {
@@ -110,21 +103,28 @@ val yearTranslation = mapOf(
 // Flow state for teaching phrases
 val Phrases: State = state {
     onEntry {
+        furhat.voice = Voice(language = Language.DUTCH, rate = 0.9)
         furhat.say("Repeat after each phrase in Dutch.")
+
+        furhat.say("We will start with greetings.")
+        call(PhraseState("Hallo", "Hello"))
+        call(PhraseState("Goedemiddag", "Good afternoon"))
+        call(PhraseState("Goedenavond", "Good evening"))
+        call(PhraseState("Goedenavond", "Good evening"))
+        call(PhraseState("Tot ziens", "Goodbye"))
+        furhat.say("Nice job! Let's move on to the next section, university course names.")
+        call(PhraseState("Informatica", "Computer Science"))
+        call(PhraseState("Wiskunde", "Mathematics"))
+        call(PhraseState("Natuurkunde", "Physics"))
+        call(PhraseState("Kunstmatige intelligentie", "Artifcial Intelligence"))
+        call(PhraseState("Bedrijfseconomie", "Business Economics"))
+        call(PhraseState("Biologie", "Biology"))
+        call(PhraseState("Geneeskunde", "Medicine"))
+        furhat.say("Nice job! Let's move onto introduction phrases")
+        call(PhraseState("Mijn naam is", "My name is"))
+        call(PhraseState("Hoe heet je?", "What is your name?"))
+        call(PhraseState("I'm from", "Ik kom uit"))
         goto(Questions)
-//        furhat.say("We will start with greetings.")
-//        call(PhraseState("Hallo", "Hello"))
-//        call(PhraseState("Goedemiddag", "Good afternoon"))
-//        call(PhraseState("Goedenavond", "Good evening"))
-//        call(PhraseState("Goedenavond", "Good evening"))
-//        call(PhraseState("Tot ziens", "Goodbye"))
-//        furhat.say("Nice job! Let's move on to the next section, basic phrases.")
-//        call(PhraseState("Ja", "Yes"))
-//        call(PhraseState("Nee", "No"))
-//        call(PhraseState("Alsjeblieft", "Please"))
-//        call(PhraseState("Dank je wel", "Thank you"))
-//        call(PhraseState("Sorry", "Excuse me"))
-//        call(PhraseState("Het spijt me", "I'm sorry"))
     }
 }
 
@@ -217,7 +217,8 @@ val UniversityCourseQuestion: State = state {
         attempts = 0
         terminate()
     }
-    onResponse<NotUnderstandIntent> {
+
+    onResponse<DontKnow> {
         furhat.say("Wat studeer je aan de universiteit? means what do you study at the university?")
         furhat.say("Try saying 'Ik studeer' and then the name of the course you study.")
         reentry()
@@ -251,7 +252,7 @@ val CityQuestion: State = state {
         attempts = 0
         terminate()
     }
-    onResponse<NotUnderstandIntent> {
+    onResponse<DontKnow> {
         furhat.say("In wlke stad woon je? means in which city do you live?")
         furhat.say("Try saying 'Ik woon in' and then name of the city you live in.")
         reentry()
@@ -303,6 +304,7 @@ fun PhraseState(phrase: String, meaning: String) = state {
             attempts = 0
             terminate()
         }
+        terminate()
     }
 }
 // Function for listening for a specific provided phrase
