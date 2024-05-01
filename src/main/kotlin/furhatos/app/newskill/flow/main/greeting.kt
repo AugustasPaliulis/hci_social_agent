@@ -29,7 +29,7 @@ val WaitingForAnswer: State = state {
         furhat.listen()
     }
     onResponse<Yes> {
-        furhat.say("Great! Let's start with some basic phrases.")
+        furhat.say("Great! Let's start.")
         goto(Phrases)
     }
 

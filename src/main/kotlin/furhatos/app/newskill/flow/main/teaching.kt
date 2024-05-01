@@ -43,8 +43,19 @@ val Phrases: State = state {
     var attempts = 0
     onEntry {
         furhat.say("Repeat after each phrase in Dutch.")
+        furhat.say("We will start with greetings.")
         call(PhraseState("Hallo", "Hello"))
         call(PhraseState("Goedemiddag", "Good afternoon"))
+        call(PhraseState("Goedenavond", "Good evening"))
+        call(PhraseState("Goedenavond", "Good evening"))
+        call(PhraseState("Tot ziens", "Goodbye"))
+        furhat.say("Nice job! Let's move on to the next section, basic phrases.")
+        call(PhraseState("Ja", "Yes"))
+        call(PhraseState("Nee", "No"))
+        call(PhraseState("Alsjeblieft", "Please"))
+        call(PhraseState("Dank je wel", "Thank you"))
+        call(PhraseState("Sorry", "Excuse me"))
+        call(PhraseState("Het spijt me", "I'm sorry"))
     }
 }
 
