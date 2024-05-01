@@ -31,7 +31,6 @@ class UniversityYearIntent : Intent() {
         }
     }
 }
-
 /**
  * Translations objects for translating user answer to Dutch
  * */
@@ -54,7 +53,7 @@ val yearTranslation = mapOf(
 )
 
 
-// State for teaching phrases
+// Flow state for teaching phrases
 val Phrases: State = state {
     onEntry {
         furhat.say("Repeat after each phrase in Dutch.")
@@ -75,15 +74,18 @@ val Phrases: State = state {
     }
 }
 
+// Flow state for teaching questions
 val Questions: State = state {
     onEntry {
         furhat.say("Now, let's practice some questions.")
         furhat.say("I will ask you question in English, please answer in English and then I will teach you to answer this question in Dutch.")
         call(AgeQuestion)
+        call(UniversityYearQuestion)
     }
 }
 
-// States for teaching questions
+
+/**Callable states for teaching questions*/
 val AgeQuestion: State = state {
     onEntry {
         furhat.say("How old are you?")
@@ -97,7 +99,7 @@ val AgeQuestion: State = state {
             furhat.say("You said $age, which is $translation in Dutch.")
             furhat.say("You could answer this question by saying 'Ik ben $translation jaar oud'.")
             furhat.say("Try saying it now.")
-            call(ListenForAnswer("Ik ben $translation jaar oud"))
+            call(ListenForPhrase("Ik ben $translation jaar oud"))
         } else {
             furhat.say("I'm sorry, I don't know how to say $age in Dutch.")
             furhat.say("Let's start again")
@@ -119,15 +121,20 @@ val UniversityYearQuestion: State = state {
         val translation = yearTranslation[year]
         if (translation != null) {
             furhat.say("You said $year, which is $translation in Dutch.")
+            // Teaching how to ask the question
             furhat.say("You could ask this question by saying 'In welk jaar zit je op de universiteit?'.")
+            furhat.say("Try saying it now.")
+            call(ListenForPhrase("In welk jaar zit je op de universiteit?"))
+            // Teaching how to answer the question
             furhat.say("An then you could answer this question by saying 'Ik zit in het $translation jaar van de universiteit'.")
+            furhat.say("Try saying it now.")
+            call(ListenForPhrase("Ik zit in het $translation jaar van de universiteit"))
         } else {
             furhat.say("I'm sorry, I don't know how to say $year in Dutch.")
             furhat.say("Let's try again")
             reentry()
         }
-        furhat.say("You said $year.")
-        furhat.say("You could answer this question by saying 'Ik zit in het $year jaar van de universiteit'.")
+
         terminate()
     }
     onResponse {
@@ -152,8 +159,8 @@ fun PhraseState(phrase: String, meaning: String) = state {
         furhat.setInputLanguage(Language.DUTCH)
         furhat.listen()
     }
-    val Intent = SimpleIntent(phrase)
-    onResponse(Intent) {
+    val intent = SimpleIntent(phrase)
+    onResponse(intent) {
         // Correct response
         furhat.say("You said $phrase, which is $meaning in Dutch.")
         attempts = 0
@@ -175,14 +182,14 @@ fun PhraseState(phrase: String, meaning: String) = state {
     }
 }
 
-fun ListenForAnswer(phrase: String) = state {
+fun ListenForPhrase(phrase: String) = state {
     var attempts = 0
     onEntry {
         furhat.setInputLanguage(Language.DUTCH)
         furhat.listen()
     }
-    val Intent = SimpleIntent(phrase)
-    onResponse(Intent) {
+    val intent = SimpleIntent(phrase)
+    onResponse(intent) {
         furhat.say("You said $phrase.")
         furhat.say("Great job!")
         attempts = 0
