@@ -17,7 +17,7 @@ val Init: State = state {
     init {
         /** Set our default interaction parameters */
         users.setSimpleEngagementPolicy(DISTANCE_TO_ENGAGE, MAX_NUMBER_OF_USERS)
-
+        furhat.voice = Voice(gender = Gender.FEMALE, language = Language.ENGLISH_GB)
     }
     onEntry {
         /** start interaction */
