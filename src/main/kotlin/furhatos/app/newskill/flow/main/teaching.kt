@@ -37,22 +37,17 @@ class UniversityYearIntent : Intent() {
 // University course intent
 class UniversityStudyIntent : Intent() {
     override fun getExamples(lang: Language): List<String> {
-        return if (lang == Language.DUTCH) {
-            listOf(
+        return listOf(
                 "Ik studeer informatica", // I study computer science
                 "Ik studeer wiskunde", // I study mathematics
                 "Ik studeer natuurkunde", // I study physics
-                "Ik studeer kunstmatige intelligentie", // I study artificial intelligence
-                "Ik studeer bedrijfseconomie", // I study business economics
+                "Ik studeer AI", // I study artificial intelligence
+                "Ik studeer Bedrijf", // I study business
+                "Ik studeer economie", // I study economics
                 "Ik studeer biologie", // I study biology
-                "Ik studeer scheikunde", // I study chemistry
                 "Ik studeer geneeskunde", // I study medicine
-                "Ik studeer psychologie", // I study psychology
-                "Ik studeer rechten" // I study law
             )
-        } else {
-            listOf()
-        }
+
     }
 }
 // Netherlands city intent
@@ -72,13 +67,10 @@ class CityIntent : Intent() {
     )
     // Creating intent list with cities
     override fun getExamples(lang: Language): List<String> {
-        return if (lang == Language.DUTCH) {
-            cities.map { "Ik woon in $it" }
-        } else {
-            listOf()
-        }
+        return cities.map { "Ik woon in $it" }
     }
 }
+
 /**
  * Translations objects for translating user answer to Dutch
  * */
@@ -104,7 +96,7 @@ val yearTranslation = mapOf(
 // Flow state for teaching phrases
 val Phrases: State = state {
     onEntry {
-        furhat.voice = Voice(gender = Gender.FEMALE, language = Language.ENGLISH_GB, rate = 1.0)
+        furhat.voice = Voice(gender = Gender.MALE, language = Language.ENGLISH_GB, rate = 1.0)
         furhat.say("Repeat after each phrase in Dutch.")
 
         furhat.say("We will start with greetings.")
@@ -161,14 +153,14 @@ val AgeQuestion: State = state {
         val translation = numberTranslation[age]
         if (translation != null) {
             furhat.say("You said $age, which is:")
-            furhat.voice = Voice(gender = Gender.FEMALE ,language = Language.DUTCH, rate = 0.9)
+            furhat.voice = Voice(gender = Gender.MALE ,language = Language.DUTCH, rate = 0.7)
             furhat.say(translation)
-            furhat.voice = Voice(gender = Gender.FEMALE, language = Language.ENGLISH_GB, rate = 1.0)
+            furhat.voice = Voice(gender = Gender.MALE, language = Language.ENGLISH_GB, rate = 1.0)
             furhat.say("in Dutch.")
             furhat.say("You could answer this question by saying:")
-            furhat.voice = Voice(gender = Gender.FEMALE, language = Language.DUTCH, rate = 0.9)
+            furhat.voice = Voice(gender = Gender.MALE, language = Language.DUTCH, rate = 0.7)
             furhat.say("Ik ben $translation jaar oud")
-            furhat.voice = Voice(gender = Gender.FEMALE, language = Language.ENGLISH_GB, rate = 1.0)
+            furhat.voice = Voice(gender = Gender.MALE, language = Language.ENGLISH_GB, rate = 1.0)
             furhat.say("Try saying it now.")
             call(ListenForPhrase("Ik ben $translation jaar oud"))
         } else {
@@ -192,9 +184,9 @@ val UniversityYearQuestion: State = state {
         val translation = yearTranslation[year]
         if (translation != null) {
             furhat.say("You said $year, which is:")
-            furhat.voice = Voice(gender = Gender.FEMALE, language = Language.DUTCH, rate = 0.9)
+            furhat.voice = Voice(gender = Gender.MALE, language = Language.DUTCH, rate = 0.7)
             furhat.say(translation)
-            furhat.voice = Voice(gender = Gender.FEMALE, language = Language.ENGLISH_GB, rate = 1.0)
+            furhat.voice = Voice(gender = Gender.MALE, language = Language.ENGLISH_GB, rate = 1.0)
             furhat.say("in Dutch.")
 
             // Teaching how to ask the question
@@ -204,9 +196,9 @@ val UniversityYearQuestion: State = state {
 
             // Teaching how to answer the question
             furhat.say("You could answer this question by saying:")
-            furhat.voice = Voice(gender = Gender.FEMALE, language = Language.DUTCH, rate = 0.9)
+            furhat.voice = Voice(gender = Gender.MALE, language = Language.DUTCH, rate = 0.7)
             furhat.say("Ik zit in het $translation jaar van de universiteit")
-            furhat.voice = Voice(gender = Gender.FEMALE, language = Language.ENGLISH_GB, rate = 1.0)
+            furhat.voice = Voice(gender = Gender.MALE, language = Language.ENGLISH_GB, rate = 1.0)
             furhat.say("Try saying it now.")
             call(ListenForPhrase("Ik zit in het $translation jaar van de universiteit"))
         } else {
@@ -229,32 +221,32 @@ val UniversityYearQuestion: State = state {
 val UniversityCourseQuestion: State = state {
     var attempts = 0
     onEntry {
-        furhat.voice = Voice(gender = Gender.FEMALE, language = Language.DUTCH, rate = 0.9)
+        furhat.voice = Voice(gender = Gender.MALE, language = Language.DUTCH, rate = 0.7)
         furhat.say("wat studeer je?")
-        furhat.voice = Voice(gender = Gender.FEMALE, language = Language.ENGLISH_GB, rate = 1.0)
-        furhat.setInputLanguage(Language.DUTCH, Language.ENGLISH_GB)
+        furhat.voice = Voice(gender = Gender.MALE, language = Language.ENGLISH_GB, rate = 1.0)
+        furhat.setInputLanguage(Language.ENGLISH_GB, Language.DUTCH)
         furhat.listen()
     }
-    var StudyingIntent = SimpleIntent("Ik studeer")
-    onResponse(StudyingIntent) {
+
+    onResponse<UniversityStudyIntent> {
         furhat.say("You said:")
-        furhat.voice = Voice(gender = Gender.FEMALE, language = Language.DUTCH, rate = 0.9)
+        furhat.voice = Voice(gender = Gender.MALE, language = Language.DUTCH, rate = 0.7)
         furhat.say(it.text)
-        furhat.voice = Voice(gender = Gender.FEMALE, language = Language.ENGLISH_GB, rate = 1.0)
+        furhat.voice = Voice(gender = Gender.MALE, language = Language.ENGLISH_GB, rate = 1.0)
         furhat.say("Great job!")
         attempts = 0
         terminate()
     }
     
     onResponse<DontKnow> {
-        furhat.voice = Voice(gender = Gender.FEMALE, language = Language.DUTCH, rate = 0.9)
+        furhat.voice = Voice(gender = Gender.MALE, language = Language.DUTCH, rate = 0.7)
         furhat.say("wat studeer je?")
-        furhat.voice = Voice(gender = Gender.FEMALE, language = Language.ENGLISH_GB, rate = 1.0)
+        furhat.voice = Voice(gender = Gender.MALE, language = Language.ENGLISH_GB, rate = 1.0)
         furhat.say("means what do you study?")
         furhat.say("Try saying: ")
-        furhat.voice = Voice(gender = Gender.FEMALE, language = Language.DUTCH, rate = 0.9)
+        furhat.voice = Voice(gender = Gender.MALE, language = Language.DUTCH, rate = 0.7)
         furhat.say("Ik studeer")
-        furhat.voice = Voice(gender = Gender.FEMALE, language = Language.ENGLISH_GB, rate = 1.0)
+        furhat.voice = Voice(gender = Gender.MALE, language = Language.ENGLISH_GB, rate = 1.0)
         furhat.say("and then the name of the course you study.")
         reentry()
     }
@@ -277,31 +269,31 @@ val UniversityCourseQuestion: State = state {
 val CityQuestion: State = state {
     var attempts = 0
     onEntry {
-        furhat.voice = Voice(gender = Gender.FEMALE, language = Language.DUTCH, rate = 0.9)
+        furhat.voice = Voice(gender = Gender.MALE, language = Language.DUTCH, rate = 0.7)
         furhat.say("In welke stad woon je?")
-        furhat.voice = Voice(gender = Gender.FEMALE, language = Language.ENGLISH_GB, rate = 1.0)
+        furhat.voice = Voice(gender = Gender.MALE, language = Language.ENGLISH_GB, rate = 1.0)
         furhat.setInputLanguage(Language.DUTCH, Language.ENGLISH_GB)
         furhat.listen()
     }
-    var intent = SimpleIntent("Ik woon in")
-    onResponse(intent) {
+
+    onResponse<CityIntent> {
         furhat.say("You said:")
-        furhat.voice = Voice(gender = Gender.FEMALE, language = Language.DUTCH, rate = 0.9)
+        furhat.voice = Voice(gender = Gender.MALE, language = Language.DUTCH, rate = 0.7)
         furhat.say(it.text)
-        furhat.voice = Voice(gender = Gender.FEMALE, language = Language.ENGLISH_GB, rate = 1.0)
+        furhat.voice = Voice(gender = Gender.MALE, language = Language.ENGLISH_GB, rate = 1.0)
         furhat.say("Great job!")
         attempts = 0
         terminate()
     }
     onResponse<DontKnow> {
-        furhat.voice = Voice(gender = Gender.FEMALE, language = Language.DUTCH, rate = 0.9)
+        furhat.voice = Voice(gender = Gender.MALE, language = Language.DUTCH, rate = 0.7)
         furhat.say("In welke stad woon je?")
-        furhat.voice = Voice(gender = Gender.FEMALE, language = Language.ENGLISH_GB, rate = 1.0)
+        furhat.voice = Voice(gender = Gender.MALE, language = Language.ENGLISH_GB, rate = 1.0)
         furhat.say("means in which city do you live?")
         furhat.say("Try saying: ")
-        furhat.voice = Voice(gender = Gender.FEMALE, language = Language.DUTCH, rate = 0.9)
+        furhat.voice = Voice(gender = Gender.MALE, language = Language.DUTCH, rate = 0.7)
         furhat.say("Ik woon in")
-        furhat.voice = Voice(gender = Gender.FEMALE, language = Language.ENGLISH_GB, rate = 1.0)
+        furhat.voice = Voice(gender = Gender.MALE, language = Language.ENGLISH_GB, rate = 1.0)
         furhat.say("and then name of the city you live in.")
         reentry()
     }
@@ -326,9 +318,9 @@ fun PhraseState(phrase: String, meaning: String) = state {
     var attempts = 0
     onEntry {
         // Saying phrase and meaning
-        furhat.voice = Voice(gender = Gender.FEMALE, language = Language.DUTCH, rate = 0.9)
+        furhat.voice = Voice(gender = Gender.MALE, language = Language.DUTCH, rate = 0.7)
         furhat.say(phrase)
-        furhat.voice = Voice(gender = Gender.FEMALE, language = Language.ENGLISH_GB, rate = 1.0)
+        furhat.voice = Voice(gender = Gender.MALE, language = Language.ENGLISH_GB, rate = 1.0)
         furhat.say(meaning)
         // Setting input language to Dutch
         furhat.setInputLanguage(Language.DUTCH)
@@ -338,9 +330,9 @@ fun PhraseState(phrase: String, meaning: String) = state {
     onResponse(intent) {
         // Correct response
         furhat.say("Great job! You said:")
-        furhat.voice = Voice(gender = Gender.FEMALE, language = Language.DUTCH, rate = 0.9)
+        furhat.voice = Voice(gender = Gender.MALE, language = Language.DUTCH, rate = 0.7)
         furhat.say(phrase)
-        furhat.voice = Voice(gender = Gender.FEMALE, language = Language.ENGLISH_GB, rate = 1.0)
+        furhat.voice = Voice(gender = Gender.MALE, language = Language.ENGLISH_GB, rate = 1.0)
         furhat.say(" Which means: $meaning")
         attempts = 0
         terminate()
@@ -351,9 +343,9 @@ fun PhraseState(phrase: String, meaning: String) = state {
         attempts++
         if (attempts < 2) {
             furhat.say("That's not quite right. Try again.")
-            furhat.voice = Voice(gender = Gender.FEMALE, language = Language.DUTCH, rate = 0.9)
+            furhat.voice = Voice(gender = Gender.MALE, language = Language.DUTCH, rate = 0.7)
             furhat.say(phrase)
-            furhat.voice = Voice(gender = Gender.FEMALE, language = Language.ENGLISH_GB, rate = 1.0)
+            furhat.voice = Voice(gender = Gender.MALE, language = Language.ENGLISH_GB, rate = 1.0)
             furhat.listen()
         } else {
             furhat.say("that's not quite right. Let's move on.")
@@ -374,9 +366,9 @@ fun ListenForPhrase(phrase: String) = state {
     onResponse(intent) {
         furhat.say("Great job!")
         furhat.say("You said:")
-        furhat.voice = Voice(gender = Gender.FEMALE, language = Language.DUTCH, rate = 0.9)
+        furhat.voice = Voice(gender = Gender.MALE, language = Language.DUTCH, rate = 0.7)
         furhat.say(phrase)
-        furhat.voice = Voice(gender = Gender.FEMALE, language = Language.ENGLISH_GB, rate = 1.0)
+        furhat.voice = Voice(gender = Gender.MALE, language = Language.ENGLISH_GB, rate = 1.0)
         attempts = 0
         terminate()
     }
@@ -384,9 +376,9 @@ fun ListenForPhrase(phrase: String) = state {
         attempts++
         if (attempts < 2) {
             furhat.say("I'm sorry, I didn't understand that. Try saying:")
-            furhat.voice = Voice(gender = Gender.FEMALE, language = Language.DUTCH, rate = 0.9)
+            furhat.voice = Voice(gender = Gender.MALE, language = Language.DUTCH, rate = 0.7)
             furhat.say(phrase)
-            furhat.voice = Voice(gender = Gender.FEMALE, language = Language.ENGLISH_GB, rate = 1.0)
+            furhat.voice = Voice(gender = Gender.MALE, language = Language.ENGLISH_GB, rate = 1.0)
             furhat.listen()
         } else {
             furhat.say("That is not correct. Let's continue.")
